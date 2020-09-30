@@ -1,8 +1,8 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="AppTheme" parent="@style/Theme.MaterialComponents.Light">
         <item name="android:windowContentTransitions">true</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimary">#FBFBFB</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowAllowEnterTransitionOverlap">true</item>

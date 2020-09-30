@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.Adapter;
+import com.arjun.weather.RecyclerView.MainAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +29,27 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private EditText userSearch;
-    private List<ItemHourly> weatherHourly = new ArrayList<>();
+    private FiveDaysWeather fiveDaysWeather;
     private Weather weather;
+    private String baseUrl = "https://api.openweathermap.org/data/2.5/";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        userSearch = findViewById(R.id.search);
-        Button send = findViewById(R.id.send);
-        send.setOnClickListener(sendListener);
+        setContentView(R.layout.main);
+//        userSearch = findViewById(R.id.search);
+//        Button send = findViewById(R.id.send);
+//        send.setOnClickListener(sendListener);
+        getSupportActionBar().setElevation(0);
+        setRecyclerView();
 
 
     }
 
     private void setRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.allWeather);
-        Adapter adapter = new Adapter(weatherHourly, this);
+        RecyclerView recyclerView = findViewById(R.id.rv);
+        MainAdapter adapter = new MainAdapter(fiveDaysWeather, this);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
@@ -60,20 +65,27 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Enter valid Location to Search", Toast.LENGTH_SHORT).show();
                 return;
             }
-            String baseUrl = "https://api.openweathermap.org/data/2.5/";
-            Log.d("Base_Url", "onClick: " + baseUrl);
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            weather = retrofit.create(Weather.class);
-            String appid = "Your_API_Key";
-            getAllData(userData, appid);
+            buildRetroift(baseUrl,userData);
 
         }
-    };
 
-        private void getAllData(String search,String apiKey) {
+
+
+    private void buildRetroift(String baseUrl,String userData) {
+                Log.d("Base_Url", "onClick: " + baseUrl);
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(baseUrl)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                weather = retrofit.create(Weather.class);
+                String appid = "API_KEY";
+            getAllData(userData, appid);
+
+            }
+        };
+
+
+    private void getAllData(String search,String apiKey) {
             Call<FiveDaysWeather> weatherCall = weather.getAllWeatherData(search, apiKey,"metric");
             weatherCall.enqueue(new Callback<FiveDaysWeather>() {
                 @Override
@@ -84,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Log.e("TAG", "onResponse:Data received " );
                     assert response.body() != null;
-                    weatherHourly = response.body().getList();
+                    fiveDaysWeather = response.body();
                     Log.e("TAG", "onResponse:Total Data "+response.body().getList().size());
                     setRecyclerView();
                 }

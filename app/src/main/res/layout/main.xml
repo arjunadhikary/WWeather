@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="locale"
+    tools:context=".MainActivity">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:id="@+id/details"
+    android:layout_margin="10dp"
+    android:weightSum="10">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/city"
+        android:textSize="30sp"
+        android:text="Butwal"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/day"
+        android:textSize="24sp"
+        android:text="Wednesday 2020"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/condition"
+        android:textSize="25sp"
+        android:text="Cloudy"/>
+</LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/extra"
+        android:layout_below="@+id/details"
+        android:layout_above="@+id/rv">
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/tempImg"
+            android:src="@drawable/ic_launcher_background"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toEndOf="@+id/tempImg"
+        android:weightSum="10">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/preception"
+            android:textAlignment="viewEnd"
+            android:textSize="20sp"
+            android:text="Butwal"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/humidity"
+            android:textSize="23sp"
+            android:textAlignment="viewEnd"
+
+            android:text="Wednesday 2020"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/mosture"
+            android:textSize="22dp"
+            android:text="Cloudy"/>
+    </LinearLayout>
+
+    </RelativeLayout>
+
+<androidx.recyclerview.widget.RecyclerView
+    android:layout_width="wrap_content"
+    android:id="@+id/rv"
+    android:layout_height="wrap_content"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+    android:orientation="horizontal"
+    tools:listitem="@layout/weather"
+    android:layout_alignParentBottom="true"/>
+</RelativeLayout>

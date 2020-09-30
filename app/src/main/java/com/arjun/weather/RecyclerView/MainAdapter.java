@@ -12,18 +12,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.arjun.weather.Model.FiveDaysWeather;
-import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.R;
 import com.bumptech.glide.Glide;
 
-import java.util.List;
-
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     FiveDaysWeather fiveDaysWeather;
     Context context;
 
-    public Adapter(FiveDaysWeather itemHourlyList,Context context){
+    public MainAdapter(FiveDaysWeather itemHourlyList, Context context){
         this.fiveDaysWeather = itemHourlyList;
         this.context = context;
 
@@ -39,17 +36,17 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Log.d("TAG", "onBindViewHolder: "+fiveDaysWeather.getList().size());
+//        Log.d("TAG", "onBindViewHolder: "+fiveDaysWeather.getList().size());
         Glide.with(context)
                 .load("https://openweathermap.org/img/wn/10d@2x.png")
                 .into(holder.icon1);
-        holder.tempmin.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMin()));
-        holder.tempmax.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMax()));
+        holder.tempmin.setText("22");
+        holder.tempmax.setText("23");
     }
 
     @Override
     public int getItemCount() {
-        return fiveDaysWeather.getList().size();
+        return 5;
     }
 
      static class ViewHolder extends RecyclerView.ViewHolder{

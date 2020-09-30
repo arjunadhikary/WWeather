@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:text="Send"
             android:id="@+id/send"
+            android:textColor="@color/cardview_dark_background"
             style="@style/Widget.AppCompat.ActionButton.Overflow"
             android:layout_weight="2"/>
 
