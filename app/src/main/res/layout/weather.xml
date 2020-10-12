@@ -36,8 +36,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="5"
-            android:gravity="center"
-            android:text="22"
+            android:layout_marginEnd="9dp"
+            android:textAlignment="viewEnd"
             android:textColor="@color/colorPrimaryDark"
             android:textStyle="bold" />
 
@@ -47,7 +47,7 @@
             android:layout_width="0dp"
             android:layout_weight="5"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:textAlignment="viewStart"
             android:text="33"
             android:textColor="@color/colorPrimaryDark"
             android:textStyle="bold" />
