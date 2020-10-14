@@ -1,5 +1,6 @@
 package com.arjun.weather;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,7 +30,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogBox.sendLocation {
     private EditText userSearch;
     private FiveDaysWeather fiveDaysWeather;
     private Weather weather;
@@ -57,21 +60,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    Button.OnClickListener sendListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            String userData = userSearch.getText().toString();
-            if (userData.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Enter valid Location to Search", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            buildRetroift(baseUrl,userData);
 
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+       getMenuInflater().inflate(R.menu.top_list,menu);
+       return super.onCreateOptionsMenu(menu);
+    }
 
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        DialogBox box = new DialogBox();
+        box.show(getSupportFragmentManager(),"Search_Location");
 
-    private void buildRetroift(String baseUrl,String userData) {
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void buildRetroift(String baseUrl, String userData) {
                 Log.d("Base_Url", "onClick: " + baseUrl);
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(baseUrl)
@@ -79,10 +85,10 @@ public class MainActivity extends AppCompatActivity {
                         .build();
                 weather = retrofit.create(Weather.class);
                 String appid = "API_KEY";
-            getAllData(userData, appid);
+//            getAllData(userData, appid);
 
             }
-        };
+
 
 
     private void getAllData(String search,String apiKey) {
@@ -108,4 +114,9 @@ public class MainActivity extends AppCompatActivity {
             });
 
         }
+
+    @Override
+    public void sendUserLocation(String location) {
+        Toast.makeText(this, "Location:"+location, Toast.LENGTH_SHORT).show();
+    }
 }

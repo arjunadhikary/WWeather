@@ -36,7 +36,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-//        Log.d("TAG", "onBindViewHolder: "+fiveDaysWeather.getList().size());
         Glide.with(context)
                 .load("https://openweathermap.org/img/wn/10d@2x.png")
                 .into(holder.icon1);
