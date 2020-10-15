@@ -12,13 +12,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.arjun.weather.Model.FiveDaysWeather;
+import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.R;
 import com.bumptech.glide.Glide;
+
+import java.security.Permission;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     FiveDaysWeather fiveDaysWeather;
+    public static final String data ="Data";
     Context context;
+    interface setDataActivity{
+        void setPosition(int position);
+
+    }
 
     public MainAdapter(FiveDaysWeather itemHourlyList, Context context){
         this.fiveDaysWeather = itemHourlyList;
@@ -34,13 +42,17 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Glide.with(context)
                 .load("https://openweathermap.org/img/wn/10d@2x.png")
                 .into(holder.icon1);
-        holder.tempmin.setText("22");
-        holder.tempmax.setText("23");
+
+        Log.e(data, "onBindViewHolder: "+fiveDaysWeather.getCity().getName().toString() );
+        //If position only 8,16,24,32,40
+        holder.tempmin.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMin()));
+        holder.tempmax.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMax()));
     }
 
     @Override
