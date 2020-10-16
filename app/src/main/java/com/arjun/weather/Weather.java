@@ -14,6 +14,12 @@ public interface Weather {
                                             @Query("units")String s);
 
     @GET("forecast")
+    Call<FiveDaysWeather> getDataOnCoords(@Query("lat") String lat,
+                                            @Query("lon")String lon,
+                                            @Query("appid")String apiKey,
+                                            @Query("units")String s);
+
+    @GET("forecast")
     Call<OneDay> getOneDay(@Query("q") String query,
                                    @Query("appid")String apiKey,
                                    @Query("units")String s);

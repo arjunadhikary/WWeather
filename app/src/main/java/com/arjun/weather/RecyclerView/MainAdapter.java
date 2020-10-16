@@ -49,7 +49,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                 .load("https://openweathermap.org/img/wn/10d@2x.png")
                 .into(holder.icon1);
 
-        Log.e(data, "onBindViewHolder: "+fiveDaysWeather.getCity().getName().toString() );
+//        Log.e(data, "onBindViewHolder: "+fiveDaysWeather.getCity().getName().toString() );
         //If position only 8,16,24,32,40
         holder.tempmin.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMin()));
         holder.tempmax.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMax()));

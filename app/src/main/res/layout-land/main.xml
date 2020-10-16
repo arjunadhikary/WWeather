@@ -35,7 +35,7 @@
         app:layout_constraintTop_toBottomOf="@+id/city" />
 
     <TextView
-        android:id="@+id/condition"
+        android:id="@+id/weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -47,13 +47,13 @@
         app:layout_constraintTop_toBottomOf="@+id/day" />
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/imageIcon"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:contentDescription="TODO"
-        app:layout_constraintBottom_toBottomOf="@+id/condition"
+        app:layout_constraintBottom_toBottomOf="@+id/weather"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toEndOf="@+id/city"
@@ -70,7 +70,7 @@
         android:textAlignment="viewEnd"
         android:textSize="17sp"
         app:layout_constraintBottom_toTopOf="@+id/humidity"
-        app:layout_constraintStart_toEndOf="@+id/imageView2" />
+        app:layout_constraintStart_toEndOf="@+id/imageIcon" />
 
     <TextView
         android:id="@+id/precipitation"
@@ -80,7 +80,7 @@
         android:text="20%"
         android:textAlignment="viewEnd"
         android:textSize="17sp"
-        app:layout_constraintBottom_toTopOf="@+id/hData"
+        app:layout_constraintBottom_toTopOf="@+id/humData"
         app:layout_constraintStart_toEndOf="@+id/pData"
         app:layout_constraintTop_toTopOf="@+id/pData"
         app:layout_constraintVertical_bias="0.0" />
@@ -93,13 +93,13 @@
         android:text="Humidity:"
         android:textAlignment="viewEnd"
         android:textSize="17sp"
-        app:layout_constraintBottom_toTopOf="@+id/moisture"
+        app:layout_constraintBottom_toTopOf="@+id/wind"
         app:layout_constraintEnd_toEndOf="@+id/pData"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/pData" />
 
     <TextView
-        android:id="@+id/hData"
+        android:id="@+id/humData"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -107,13 +107,13 @@
         android:text="74%"
         android:textAlignment="viewEnd"
         android:textSize="17sp"
-        app:layout_constraintBottom_toTopOf="@+id/moData"
+        app:layout_constraintBottom_toTopOf="@+id/windData"
         app:layout_constraintEnd_toEndOf="@+id/precipitation"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/humidity" />
 
     <TextView
-        android:id="@+id/moisture"
+        android:id="@+id/wind"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
@@ -125,19 +125,19 @@
         app:layout_constraintStart_toStartOf="@+id/humidity" />
 
     <TextView
-        android:id="@+id/moData"
+        android:id="@+id/windData"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="10Km/hr"
         android:textAlignment="viewEnd"
         android:textSize="17sp"
-        app:layout_constraintBottom_toBottomOf="@+id/moisture"
-        app:layout_constraintEnd_toEndOf="@+id/hData"
+        app:layout_constraintBottom_toBottomOf="@+id/wind"
+        app:layout_constraintEnd_toEndOf="@+id/humData"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/hData" />
+        app:layout_constraintStart_toStartOf="@+id/humData" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/bigTemp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -147,7 +147,7 @@
         android:text="@string/display"
         android:textColor="#101010"
         android:textSize="34sp"
-        app:layout_constraintStart_toEndOf="@+id/imageView2"
+        app:layout_constraintStart_toEndOf="@+id/imageIcon"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -159,8 +159,8 @@
         android:text="°C |"
         android:textColor="@color/design_default_color_primary_variant"
         android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/textView"
-        app:layout_constraintTop_toTopOf="@+id/textView" />
+        app:layout_constraintStart_toEndOf="@+id/bigTemp"
+        app:layout_constraintTop_toTopOf="@+id/bigTemp" />
 
     <TextView
         android:id="@+id/textView4"
