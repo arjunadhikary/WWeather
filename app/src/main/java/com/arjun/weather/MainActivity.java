@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         weather = retrofit.create(Weather.class);
-        String appid = "a48dc14ca469afef26f6969098961782";
+        String appid = "";
         getAllData(String.valueOf(lat),String.valueOf(lon), appid);
 
     }
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .build();
         weather = retrofit.create(Weather.class);
         //API key will go down here
-        String appid = "";
+        String appid = "a48dc14ca469afef26f6969098961782";
         getAllData(userData, appid);
 
     }
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 Log.e("data", "onBindViewHolder: " + fiveDaysWeather.getCity().getName());
                 string_date stringDate = new string_date();
                 String day = stringDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt());
-                date.setText(day);
+                if(day!=null) date.setText(day);
                 setRecyclerView();
             }
 
