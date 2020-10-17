@@ -3,7 +3,9 @@ package com.arjun.weather.Model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Main {
+import java.io.Serializable;
+
+public class Main implements Serializable {
 
     @SerializedName("temp")
     private double temp;

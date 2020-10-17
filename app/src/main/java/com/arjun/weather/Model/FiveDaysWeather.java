@@ -1,5 +1,7 @@
 package com.arjun.weather.Model;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class FiveDaysWeather {
@@ -16,7 +18,7 @@ public class FiveDaysWeather {
     private double message;
 
     @SerializedName("list")
-    private List<ItemHourly> list;
+    private ArrayList<ItemHourly> list;
 
     public City getCity() {
         return city;
@@ -50,11 +52,11 @@ public class FiveDaysWeather {
         this.message = message;
     }
 
-    public List<ItemHourly> getList() {
+    public ArrayList<ItemHourly> getList() {
         return list;
     }
 
-    public void setList(List<ItemHourly> list) {
+    public void setList(ArrayList<ItemHourly> list) {
         this.list = list;
     }
 }

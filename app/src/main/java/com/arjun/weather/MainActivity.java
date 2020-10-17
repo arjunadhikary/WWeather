@@ -2,16 +2,19 @@ package com.arjun.weather;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -29,18 +32,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.arjun.weather.Model.FiveDaysWeather;
-import com.arjun.weather.Model.Main;
+import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.MainAdapter;
-import com.arjun.weather.utils.string_date;
+import com.arjun.weather.utils.DialogBox;
+import com.arjun.weather.utils.Divide;
+import com.arjun.weather.utils.FormatDate;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -49,26 +57,35 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements DialogBox.sendLocation {
+public class MainActivity extends AppCompatActivity implements DialogBox.sendLocation,MainAdapter.setDataActivity{
     FusedLocationProviderClient providerClient;
     private int perm_id = 101;
+    private boolean isTapped=false;
+    private Menu menu;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
     private double lat, longs;
-    private FiveDaysWeather fiveDaysWeather = new FiveDaysWeather();
+    private Divide divide = new Divide();
+    private FiveDaysWeather fiveDaysWeather;
     private Weather weather;
     private String baseUrl = "https://api.openweathermap.org/data/2.5/";
     //Get all Views
-    TextView cityName,date,weatherCondition,humidity,wind,bigTemperature;
+    TextView cityName,date,weatherCondition,humidity,wind,bigTemperature,precipitation;
     ImageView icon;
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        Objects.requireNonNull(getSupportActionBar()).setElevation(0);
-        buildRetroift(baseUrl, "Butwal");
-        providerClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
         setAllViews();
+        preferences =getSharedPreferences("Location", Activity.MODE_PRIVATE);
+        editor = preferences.edit();
+        Objects.requireNonNull(getSupportActionBar()).setElevation(0);
+        String loc = preferences.getString("location",null);
+        providerClient = LocationServices.getFusedLocationProviderClient(this);
+        if(loc!=null) buildRetroift(baseUrl, loc);
+        else buildRetroift(baseUrl,"Butwal");
 
 
 
@@ -79,14 +96,15 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         weatherCondition = findViewById(R.id.weather);
         wind = findViewById(R.id.windData);
         humidity = findViewById(R.id.humData);
+        precipitation = findViewById(R.id.pre);
         bigTemperature = findViewById(R.id.bigTemp);
-        date = findViewById(R.id.day_name_text_view);
+        date = findViewById(R.id.weekday);
         icon = findViewById(R.id.imageIcon);
     }
 
     private void setRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.rv);
-        MainAdapter adapter = new MainAdapter(fiveDaysWeather, this);
+        MainAdapter adapter = new MainAdapter(fiveDaysWeather, this,this);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
@@ -98,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
             @Override
             public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                outRect.right = 20;
+                outRect.right = 5;
             }
         });
         recyclerView.setAdapter(adapter);
@@ -109,18 +127,33 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_list, menu);
+        this.menu = menu;
         return super.onCreateOptionsMenu(menu);
     }
 
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        DialogBox box = new DialogBox();
-        box.show(getSupportFragmentManager(), "Search_Location");
-
+        switch (item.getItemId()){
+            case R.id.search_auto:
+                if(!isTapped){ isTapped =true;menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));}
+                else{ isTapped = false;menu.getItem(0).getIcon().setTint(Color.parseColor("#000000")); }
+                getLastLocation();
+                break;
+            case R.id.search_location:
+                showDialogBox();
+                break;
+        }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void showDialogBox() {
+        DialogBox box = new DialogBox();
+        box.show(getSupportFragmentManager(), "Search_Location");
+
+    }
+
     private void buildRetroift(String baseUrl,double lat,double lon) {
         Log.d("Base_Url", "onClick: " + baseUrl);
         Retrofit retrofit = new Retrofit.Builder()
@@ -128,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         weather = retrofit.create(Weather.class);
-        String appid = "";
+        String appid = "api_key";
         getAllData(String.valueOf(lat),String.valueOf(lon), appid);
 
     }
@@ -147,9 +180,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 Log.e("TAG", "onResponse:Data received ");
                 assert response.body() != null;
                 fiveDaysWeather = response.body();
-                cityName.setText(fiveDaysWeather.getCity().getName());
-                Log.e("TAG", "onResponse:Total Data " + response.body().getList().size());
-                Log.e("data", "onBindViewHolder: " + fiveDaysWeather.getCity().getName());
+                divide.convertData(fiveDaysWeather);
+                Log.e("TAG", "onCreate: "+divide.getDayOne().size());
+                        getSupportActionBar().setTitle(fiveDaysWeather.getCity().getName()+", "+fiveDaysWeather.getCity().getCountry());
                 setRecyclerView();
             }
 
@@ -187,24 +220,28 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                     Log.e("TAG", "onResponse: " + response.code());
                     return;
                 }
-                Log.e("TAG", "onResponse:Data received ");
                 assert response.body() != null;
                 fiveDaysWeather = response.body();
-                cityName.setText(fiveDaysWeather.getCity().getName());
+                //TODO: Convert Decimal point value to Integer
+                getSupportActionBar()
+                        .setTitle(fiveDaysWeather.getCity().getName()+", "+fiveDaysWeather.getCity().getCountry());
                 weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getMain());
-                wind.setText(String.valueOf(fiveDaysWeather.getList().get(0).getWind().getSpeed())+" km/hr");
-                Log.e("TAG", "onResponse:Total Data " + response.body().getList().size());
-                humidity.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getHumidity()));
+                wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed())+" km/hr");
+                humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity())+"%");
+                precipitation.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getPressure()));
                 bigTemperature.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getTemp()));
                 Glide
                         .with(MainActivity.this)
                         .load("https://openweathermap.org/img/wn/"
                                 +fiveDaysWeather.getList().get(0).getWeather().get(0).getIcon()
                                 +"@2x.png").into(icon);
-                Log.e("data", "onBindViewHolder: " + fiveDaysWeather.getCity().getName());
-                string_date stringDate = new string_date();
-                String day = stringDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt());
-                if(day!=null) date.setText(day);
+                    FormatDate formatDate = new FormatDate();
+                try {
+                    date.setText(formatDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
                 setRecyclerView();
             }
 
@@ -217,7 +254,12 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     }
 
     @Override
-    public void sendUserLocation(String location) {
+    public void sendUserLocation(String location,boolean toSave) {
+        if(toSave){
+            //Store user Preference here
+            editor.putString("location",location);
+            editor.commit();
+        }
         Toast.makeText(this, "Location:" + location, Toast.LENGTH_SHORT).show();
         buildRetroift(baseUrl, location);
     }
@@ -250,19 +292,11 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         if (requestCode == perm_id) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getLastLocation();
-            }else{
-                Toast.makeText(this,
-                        "This app requires Location Permission to work correctly",
-                        Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (checkPermission()) { getLastLocation();}
-    }
+
 
     private void getLastLocation(){
         // check if permissions are given
@@ -272,24 +306,19 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 // getting last location from FusedLocationClient object
                 providerClient.getLastLocation().addOnCompleteListener(task -> {
                             Location location = task.getResult();
-                            if (location == null) {
-                                requestNewLocationData();
-                            }
+                            if (location == null) { requestNewLocationData();}
                             else {
                                 lat= location.getLatitude();
                                 longs=location.getLongitude();
                                 buildRetroift(baseUrl,lat,longs);
-                                Log.e("Data Loc", "getLastLocation: "+lat+" "+longs);
-                                Toast.makeText(MainActivity.this, "Lat:"+lat+" long:"+longs, Toast.LENGTH_SHORT).show();
                             }
                         });
             }
 
             else {
-                Toast.makeText(this, "Please turn on your location...", Toast.LENGTH_LONG).show();
-                Intent intent
-                        = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
+
             }
         }
         else {
@@ -302,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     private void requestNewLocationData(){
         // Initializing LocationRequest object with appropriate methods
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         mLocationRequest.setInterval(5);
         mLocationRequest.setFastestInterval(0);
         mLocationRequest.setNumUpdates(1);
@@ -320,8 +349,29 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             Location mLastLocation = locationResult.getLastLocation();
             lat =mLastLocation.getLatitude();
             longs= mLastLocation.getLongitude();
-            Log.e("Data Loc", "getLastLocation: "+lat+" "+longs);
         }
     };
 
+
+    @Override
+    public void setPosition(int position) {
+        Toast.makeText(this, "Got Position"+position, Toast.LENGTH_SHORT).show();
+        ArrayList<ItemHourly> itemHourlies = null;
+        if(position==0){
+            itemHourlies = new ArrayList<>(divide.getDayOne());
+        }else if(position==1){
+            itemHourlies = new ArrayList<>(divide.getDayTwo());
+        }else if(position==2){
+            itemHourlies = new ArrayList<>(divide.getDayThree());
+        }else if(position==3){
+            itemHourlies = new ArrayList<>(divide.getDayFOur());
+        }else {
+            itemHourlies = new ArrayList<>(divide.getDayFive());
+        }
+
+
+        Intent intent = new Intent(this,ItemsHourly.class);
+        intent.putExtra("private_list", new Gson().toJson(itemHourlies));;
+        startActivity(intent);
+    }
 }

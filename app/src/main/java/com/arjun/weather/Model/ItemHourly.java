@@ -1,10 +1,13 @@
 package com.arjun.weather.Model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.List;
-
-public class ItemHourly {
+public class ItemHourly{
 
     @SerializedName("dt")
     private int dt;
@@ -29,6 +32,14 @@ public class ItemHourly {
 
     @SerializedName("rain")
     private Rain rain;
+
+    protected ItemHourly(Parcel in) {
+        dt = in.readInt();
+        dtTxt = in.readString();
+    }
+
+
+
 
     public int getDt() {
         return dt;
@@ -93,4 +104,7 @@ public class ItemHourly {
     public void setRain(Rain rain) {
         this.rain = rain;
     }
+
+
+
 }

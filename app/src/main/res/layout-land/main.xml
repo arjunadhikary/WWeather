@@ -23,7 +23,7 @@
 
 
     <TextView
-        android:id="@+id/day"
+        android:id="@+id/weekday"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -41,10 +41,10 @@
         android:layout_marginTop="8dp"
         android:text="Cloudy"
         android:textSize="28sp"
-        app:layout_constraintEnd_toEndOf="@+id/day"
+        app:layout_constraintEnd_toEndOf="@+id/weekday"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/day"
-        app:layout_constraintTop_toBottomOf="@+id/day" />
+        app:layout_constraintStart_toStartOf="@+id/weekday"
+        app:layout_constraintTop_toBottomOf="@+id/weekday" />
 
     <ImageView
         android:id="@+id/imageIcon"
@@ -73,7 +73,7 @@
         app:layout_constraintStart_toEndOf="@+id/imageIcon" />
 
     <TextView
-        android:id="@+id/precipitation"
+        android:id="@+id/pre"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
@@ -108,7 +108,7 @@
         android:textAlignment="viewEnd"
         android:textSize="17sp"
         app:layout_constraintBottom_toTopOf="@+id/windData"
-        app:layout_constraintEnd_toEndOf="@+id/precipitation"
+        app:layout_constraintEnd_toEndOf="@+id/pre"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/humidity" />
 

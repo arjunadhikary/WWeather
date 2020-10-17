@@ -1,4 +1,4 @@
-package com.arjun.weather;
+package com.arjun.weather.utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,16 +16,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SearchView;
+
+import com.arjun.weather.R;
 
 import java.util.Objects;
 
 public class DialogBox extends DialogFragment {
     private EditText searchView;
-
-    interface sendLocation{
-        void sendUserLocation(String location);
+    private CheckBox checkBox;
+    public interface sendLocation{
+        void sendUserLocation(String location,boolean toSave);
     }
 
     sendLocation sendLocation;
@@ -34,13 +37,14 @@ public class DialogBox extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.activity_dialoge_box,null);
         searchView = view.findViewById(R.id.search_location);
+        checkBox = view.findViewById(R.id.checkBox);
         Button ok = view.findViewById(R.id.ok);
         Button cancel = view.findViewById(R.id.cancel);
         ok.setOnClickListener(view12 -> {
             String location = searchView.getText().toString();
             if(!location.isEmpty()){
                 //Send Data to main Activity using Interface
-                sendLocation.sendUserLocation(location);
+                sendLocation.sendUserLocation(location, checkBox.isChecked());
                 Objects.requireNonNull(getDialog()).dismiss();
             }
             else{
