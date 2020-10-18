@@ -3,10 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/spacing_medium"
+    android:layout_weight="1"
     android:layoutDirection="locale"
     android:orientation="vertical"
     android:paddingBottom="@dimen/spacing_medium">
 
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/smallShimmer"
+        android:background="@color/shimmer"
+        android:layout_weight="1">
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_view"
         style="@style/Widget.MaterialComponents.CardView"
@@ -56,6 +63,7 @@
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/max_temp_text_view"
                     android:layout_width="wrap_content"
+                    android:textColor="#EEC61717"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:layoutDirection="ltr" />
@@ -65,8 +73,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
+                    android:textColor="#3D931B"
                     android:layoutDirection="ltr" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </LinearLayout>
+
+

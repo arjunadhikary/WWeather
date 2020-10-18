@@ -2,6 +2,7 @@ package com.arjun.weather;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -9,17 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.Adapter;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 public class ItemsHourly extends AppCompatActivity {
@@ -35,8 +34,12 @@ public class ItemsHourly extends AppCompatActivity {
         Type type = new TypeToken<List<ItemHourly>>() {
         }.getType();
         listPrivate = new Gson().fromJson(getIntent().getStringExtra("private_list"), type);
-        Log.d("TAGYYYY", "setPosition: "+listPrivate.get(0).getMain().getTempMax());
+
         setRecyclerView();
+        new Handler().postDelayed((Runnable) () -> {
+            adapter.isShimmer = false;
+            adapter.notifyDataSetChanged();
+        },0,2000);
     }
 
     private void setRecyclerView() {

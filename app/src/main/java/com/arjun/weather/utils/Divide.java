@@ -1,6 +1,7 @@
 package com.arjun.weather.utils;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
@@ -16,14 +17,18 @@ public class Divide {
    private ArrayList<ItemHourly> dayThree =new ArrayList<>();
    private ArrayList<ItemHourly> dayFour =new ArrayList<>();
    private ArrayList<ItemHourly> dayFive =new ArrayList<>();
-   private FiveDaysWeather daysWeather;
+
 
 
     public void convertData(FiveDaysWeather daysWeather){
+    if(dayOne.size()!=0){
+        dayOne.clear();dayTwo.clear();dayThree.clear();dayFour.clear();
+    }
        int day= getDay(daysWeather.getList().get(0).getDtTxt());
         for (ItemHourly hourly:daysWeather.getList()) {
             if(getDay(hourly.getDtTxt())==day){
                 dayOne.add(hourly);
+                Log.e("Day_One", "convertData: "+dayOne.size() );
             }
             else if(getDay(hourly.getDtTxt())==day+1){
                 dayTwo.add(hourly);
@@ -34,7 +39,7 @@ public class Divide {
             else if(getDay(hourly.getDtTxt())==day+3){
                 dayFour.add(hourly);
             }
-            else {
+            else if(getDay(hourly.getDtTxt())==day+4) {
                 dayFive.add(hourly);
             }
         }

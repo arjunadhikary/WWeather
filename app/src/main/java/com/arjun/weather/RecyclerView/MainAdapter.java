@@ -12,10 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.utils.FormatDate;
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.R;
 import com.bumptech.glide.Glide;
+import com.facebook.shimmer.ShimmerFrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +25,16 @@ import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
-    FiveDaysWeather fiveDaysWeather;
+    ArrayList<ItemHourly>fiveDaysWeather;
     Context context;
+   public boolean isShimmer = true;
+    int shimmerNumber = 5;
    public interface setDataActivity{
         void setPosition(int position);
 
     }
     setDataActivity setDataActivity;
-    public MainAdapter(FiveDaysWeather itemHourlyList, Context context,setDataActivity dataActivity){
+    public MainAdapter(ArrayList<ItemHourly> itemHourlyList, Context context,setDataActivity dataActivity){
         this.fiveDaysWeather = itemHourlyList;
         this.setDataActivity = dataActivity;
         this.context = context;
@@ -48,42 +52,43 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Glide.with(context)
-                .load("https://openweathermap.org/img/wn/" + fiveDaysWeather.getList().get(position)
-                        .getWeather().get(0)
-                        .getIcon() + "@2x.png")
-                .into(holder.icon1);
-
-
-        //If position only 8,16,24,32,40
-//        Random rnd = new Random();
         String[] colorsTxt = context.getApplicationContext().getResources().getStringArray(R.array.colors);
         List<Integer> colors = new ArrayList<Integer>();
         for (String s : colorsTxt) {
             int newColor = Color.parseColor(s);
             colors.add(newColor);
         }
-
-        holder.tempmin.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMin()));
-        holder.tempmax.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTempMax()));
-        holder.nomtemp.setText(String.valueOf(fiveDaysWeather.getList().get(position).getMain().getTemp()));
-        holder.cardView.setCardBackgroundColor(colors.get(position));
-        FormatDate date = new FormatDate();
-        String fdate = date.onlyDay(fiveDaysWeather.getList().get(position).getDtTxt());
-        holder.day.setText(fdate);
+        if(isShimmer) {
+            holder.cardView.setCardBackgroundColor(null);
+            holder.shimmerFrameLayout.startShimmerAnimation();
+        }
+        else {
+            Glide.with(context)
+                    .load("https://openweathermap.org/img/wn/" + fiveDaysWeather.get(position)
+                            .getWeather().get(0)
+                            .getIcon() + "@2x.png")
+                    .into(holder.icon1);
+            holder.shimmerFrameLayout.stopShimmerAnimation();
+            holder.nomtemp.setText(String.format("%s°C", (fiveDaysWeather.get(position).getMain().getTemp())));
+            holder.cardView.setCardBackgroundColor(colors.get(position));
+            FormatDate date = new FormatDate();
+            String fdate = date.onlyDay(fiveDaysWeather.get(position).getDtTxt());
+            holder.day.setText(fdate);
+        }
     }
 
 
     @Override
     public int getItemCount() {
-        return 5;
+        return isShimmer?shimmerNumber:fiveDaysWeather.size() ;
     }
 
      class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             LinearLayout layout;
             ImageView icon1;
             CardView cardView;
-            TextView tempmax,tempmin,nomtemp,day;
+            ShimmerFrameLayout shimmerFrameLayout;
+            TextView nomtemp,day;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -92,9 +97,9 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             nomtemp = itemView.findViewById(R.id.temp_text_view);
             cardView = itemView.findViewById(R.id.card_view);
             cardView.setOnClickListener(this);
+            shimmerFrameLayout = itemView.findViewById(R.id.shimmer);
             icon1 = itemView.findViewById(R.id.weather_image_view);
-            tempmax = itemView.findViewById(R.id.max_temp_text_view);
-            tempmin = itemView.findViewById(R.id.min_temp_text_view);
+
 
         }
 

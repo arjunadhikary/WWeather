@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:shimmer="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipe_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#fafaf6"
+
     android:layoutDirection="locale"
     tools:context=".MainActivity">
-
-
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="400dp"
+        android:id="@+id/pConstrain"
+        android:layout_width="0dp"
         android:layout_height="370dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
         android:background="@drawable/mainborder"
         app:layout_constraintBottom_toTopOf="@+id/rv"
         app:layout_constraintEnd_toEndOf="parent"
@@ -43,20 +43,21 @@
             android:layout_height="100dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="92dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="96dp"
+            android:contentDescription="TODO"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.833"
+            app:layout_constraintHorizontal_bias="0.75"
             app:layout_constraintStart_toEndOf="@+id/bigTemp"
             app:layout_constraintTop_toBottomOf="@+id/bigTemp"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintVertical_bias="0.06" />
 
         <TextView
             android:id="@+id/pData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
+            android:fontFamily="@font/montserrat"
             android:text="Precipitation"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
@@ -69,6 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:fontFamily="@font/montserrat"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
@@ -79,6 +81,7 @@
             android:id="@+id/humidity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat"
             android:text="Humidity:"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
@@ -90,6 +93,7 @@
             android:id="@+id/humData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
@@ -113,6 +117,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="80dp"
+            android:fontFamily="@font/montserrat"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
@@ -127,6 +132,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginStart="120dp"
             android:layout_marginTop="40dp"
+            android:fontFamily="@font/montserrat"
             android:textColor="#EEEEEE"
             android:textSize="45sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -164,23 +170,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.037"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/weather" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="FiveDay Weather"
-        app:layout_constraintBottom_toTopOf="@+id/rv"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.182"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

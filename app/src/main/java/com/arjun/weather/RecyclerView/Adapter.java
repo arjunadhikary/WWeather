@@ -1,5 +1,6 @@
 package com.arjun.weather.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,24 +11,35 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.R;
 import com.arjun.weather.utils.FormatDate;
 import com.bumptech.glide.Glide;
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
-        ArrayList<ItemHourly> hourlyArrayList;
-        Context context;
+    public boolean isShimmer = true;
+    int shimmerNumber=8;
 
-    public Adapter(ArrayList<ItemHourly> itemHourlyList, Context context){
-        this.hourlyArrayList = itemHourlyList;
+    ArrayList<ItemHourly> hourlyArrayList = new ArrayList<>();
+    Context context;
+
+    public Adapter(ArrayList<ItemHourly> itemHourlyList, Context context) {
+        if(hourlyArrayList.size()!=0){
+            hourlyArrayList.clear();
+            hourlyArrayList.addAll(itemHourlyList);
+        }else {
+            this.hourlyArrayList = itemHourlyList;
+        }
         this.context = context;
 
     }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,31 +49,40 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-//        Log.d("TAG", "onBindViewHolder: "+hourlyArrayList.get(position).getWeather().size());
-        Glide.with(context)
-                .load("https://openweathermap.org/img/wn/10d@2x.png")
-                .into(holder.icon1);
+        if(isShimmer) {
+            holder.frameLayout.startShimmerAnimation();
+        }else{
+            holder.frameLayout.stopShimmerAnimation();
+            Glide.with(context)
+                    .load("https://openweathermap.org/img/wn/"+hourlyArrayList.get(position).getWeather().get(0).getIcon()+"@2x.png")
+                    .into(holder.icon1);
 
-            holder.tempmin.setText(String.valueOf(hourlyArrayList.get(position).getMain().getTempMin()));
-            holder.tempmax.setText(String.valueOf(hourlyArrayList.get(position).getMain().getTempMax()));
+            holder.tempmin.setText(hourlyArrayList.get(position).getMain().getTempMin()+"°C");
+            holder.tempmax.setText(hourlyArrayList.get(position).getMain().getTempMax()+"°C");
             holder.day.setText(new FormatDate().onlyDay(hourlyArrayList.get(position).getDtTxt()));
+            holder.date.setText(new FormatDate().mon_day(hourlyArrayList.get(position).getDtTxt()));
+        }
+
     }
 
     @Override
     public int getItemCount() {
-        return hourlyArrayList.size();
+        return isShimmer?shimmerNumber:hourlyArrayList.size();
     }
 
-     static class ViewHolder extends RecyclerView.ViewHolder{
-            ImageView icon1;
-            TextView tempmax,tempmin,date,day;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView icon1;
+        ShimmerFrameLayout frameLayout;
+        TextView tempmax, tempmin, date, day;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             icon1 = itemView.findViewById(R.id.weather_image_view);
             tempmax = itemView.findViewById(R.id.max_temp_text_view);
+            frameLayout = itemView.findViewById(R.id.smallShimmer);
             date = itemView.findViewById(R.id.date_text_view);
             day = itemView.findViewById(R.id.day_name_text_view);
             tempmin = itemView.findViewById(R.id.min_temp_text_view);

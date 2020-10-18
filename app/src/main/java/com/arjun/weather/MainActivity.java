@@ -14,7 +14,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.Parcelable;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -30,7 +29,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.MainAdapter;
@@ -44,34 +42,45 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
-
-import java.io.Serializable;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements DialogBox.sendLocation,MainAdapter.setDataActivity{
+public class MainActivity extends AppCompatActivity implements DialogBox.sendLocation, MainAdapter.setDataActivity {
     FusedLocationProviderClient providerClient;
-    private int perm_id = 101;
-    private boolean isTapped=false;
-    private Menu menu;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    //Get all Views
+    TextView  date, weatherCondition, humidity, wind, bigTemperature, precipitation;
+    ImageView icon;
+    private int perm_id = 101;
+    private boolean isTapped = false;
+    private Menu menu;
     private double lat, longs;
+    RecyclerView recyclerView;
+    MainAdapter adapter;
     private Divide divide = new Divide();
     private FiveDaysWeather fiveDaysWeather;
+    private ArrayList<ItemHourly> itemHourlyArrayList = new ArrayList<>();
     private Weather weather;
     private String baseUrl = "https://api.openweathermap.org/data/2.5/";
-    //Get all Views
-    TextView cityName,date,weatherCondition,humidity,wind,bigTemperature,precipitation;
-    ImageView icon;
+    private LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            Location mLastLocation = locationResult.getLastLocation();
+            lat = mLastLocation.getLatitude();
+            longs = mLastLocation.getLongitude();
+            Log.e("Location", "onLocationResult: "+lat+" "+longs );
+                buildRetroift(baseUrl,lat,longs);
+                Log.e("Location", "onLocationResult: "+lat+" "+longs );
+
+
+        }
+    };
 
     @SuppressLint("CommitPrefEdits")
     @Override
@@ -79,20 +88,18 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         setAllViews();
-        preferences =getSharedPreferences("Location", Activity.MODE_PRIVATE);
+        preferences = getSharedPreferences("Location", Activity.MODE_PRIVATE);
         editor = preferences.edit();
         Objects.requireNonNull(getSupportActionBar()).setElevation(0);
-        String loc = preferences.getString("location",null);
+        String loc = preferences.getString("location", null);
         providerClient = LocationServices.getFusedLocationProviderClient(this);
-        if(loc!=null) buildRetroift(baseUrl, loc);
-        else buildRetroift(baseUrl,"Butwal");
-
+        if (loc != null) buildRetroift(baseUrl, loc);
+        else buildRetroift(baseUrl, "Newtown");
 
 
     }
 
     private void setAllViews() {
-        cityName = findViewById(R.id.city);
         weatherCondition = findViewById(R.id.weather);
         wind = findViewById(R.id.windData);
         humidity = findViewById(R.id.humData);
@@ -100,29 +107,21 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         bigTemperature = findViewById(R.id.bigTemp);
         date = findViewById(R.id.weekday);
         icon = findViewById(R.id.imageIcon);
+        setRecyclerView();
+
+
+
     }
 
     private void setRecyclerView() {
-        RecyclerView recyclerView = findViewById(R.id.rv);
-        MainAdapter adapter = new MainAdapter(fiveDaysWeather, this,this);
+         recyclerView = findViewById(R.id.rv);
+         adapter = new MainAdapter(itemHourlyArrayList, this, this);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                super.onDraw(c, parent, state);
-            }
-
-            @Override
-            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                outRect.right = 5;
-            }
-        });
         recyclerView.setAdapter(adapter);
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -131,14 +130,23 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         return super.onCreateOptionsMenu(menu);
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.search_auto:
-                if(!isTapped){ isTapped =true;menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));}
-                else{ isTapped = false;menu.getItem(0).getIcon().setTint(Color.parseColor("#000000")); }
-                getLastLocation();
+                if (!isTapped) {
+                    isTapped = true;
+                    menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));
+                    if(lat==0.0&&longs==0.0){
+                        Toast.makeText(this, "Null Value", Toast.LENGTH_SHORT).show();
+                        requestNewLocationData();
+                    }
+
+                } else {
+                    isTapped = false;
+                    menu.getItem(0).getIcon().setTint(Color.parseColor("#000000"));
+                }
+
                 break;
             case R.id.search_location:
                 showDialogBox();
@@ -154,22 +162,21 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     }
 
-    private void buildRetroift(String baseUrl,double lat,double lon) {
+    private void buildRetroift(String baseUrl, double lat, double lon) {
         Log.d("Base_Url", "onClick: " + baseUrl);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         weather = retrofit.create(Weather.class);
-        String appid = "api_key";
-        getAllData(String.valueOf(lat),String.valueOf(lon), appid);
+        String appid = "KEY_HERE";
+        getAllData(String.valueOf(lat), String.valueOf(lon), appid);
 
     }
 
+    private void getAllData(String lat, String lon, String apiKey) {
 
-    private void getAllData(String lat,String lon, String apiKey) {
-
-        Call<FiveDaysWeather> weatherCall = weather.getDataOnCoords(lat,lon, apiKey, "metric");
+        Call<FiveDaysWeather> weatherCall = weather.getDataOnCoords(lat, lon, apiKey, "metric");
         weatherCall.enqueue(new Callback<FiveDaysWeather>() {
             @Override
             public void onResponse(Call<FiveDaysWeather> call, Response<FiveDaysWeather> response) {
@@ -179,11 +186,11 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 }
                 Log.e("TAG", "onResponse:Data received ");
                 assert response.body() != null;
+                if (fiveDaysWeather.getList().size() != 0){
+                    fiveDaysWeather = null;
                 fiveDaysWeather = response.body();
-                divide.convertData(fiveDaysWeather);
-                Log.e("TAG", "onCreate: "+divide.getDayOne().size());
-                        getSupportActionBar().setTitle(fiveDaysWeather.getCity().getName()+", "+fiveDaysWeather.getCity().getCountry());
-                setRecyclerView();
+            }
+                 setDataFromAPI();
             }
 
             @Override
@@ -194,9 +201,41 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     }
 
+    @SuppressLint("SetTextI18n")
+    private void setDataFromAPI() {
+        adapter.isShimmer = false;
+        adapter.notifyDataSetChanged();
+        divide.convertData(fiveDaysWeather);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(fiveDaysWeather.getCity().getName() + ", " + fiveDaysWeather.getCity().getCountry());
+        weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getMain());
+        wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed()) + " km/hr");
+        humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity()) + "%");
+        precipitation.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getPressure()));
+        bigTemperature.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getTemp()));
+        Glide
+                .with(MainActivity.this)
+                .load("https://openweathermap.org/img/wn/"
+                        + fiveDaysWeather.getList().get(0).getWeather().get(0).getIcon()
+                        + "@2x.png").into(icon);
+        FormatDate formatDate = new FormatDate();
+        date.setText(formatDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt()));
+       bottom_data(formatDate);
+    }
+
+    private void bottom_data(FormatDate formatDate) {
+        for (ItemHourly hourly: divide.getDayOne()) {
+            if(formatDate.onlyDay(hourly.getDtTxt()).equals("9") || formatDate.onlyDay(hourly.getDtTxt()).equals("12")){
+                itemHourlyArrayList.add(hourly);
+                return;
+            }
+        }
+        itemHourlyArrayList.add(divide.getDayTwo().get(3));
+        itemHourlyArrayList.add(divide.getDayThree().get(3));
+        itemHourlyArrayList.add(divide.getDayFOur().get(3));
+        itemHourlyArrayList.add(divide.getDayFive().get(3));
+    }
 
     private void buildRetroift(String baseUrl, String userData) {
-        Log.d("Base_Url", "onClick: " + baseUrl);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -207,7 +246,6 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         getAllData(userData, appid);
 
     }
-
 
     private void getAllData(String search, String apiKey) {
 
@@ -222,27 +260,8 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 }
                 assert response.body() != null;
                 fiveDaysWeather = response.body();
-                //TODO: Convert Decimal point value to Integer
-                getSupportActionBar()
-                        .setTitle(fiveDaysWeather.getCity().getName()+", "+fiveDaysWeather.getCity().getCountry());
-                weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getMain());
-                wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed())+" km/hr");
-                humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity())+"%");
-                precipitation.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getPressure()));
-                bigTemperature.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getTemp()));
-                Glide
-                        .with(MainActivity.this)
-                        .load("https://openweathermap.org/img/wn/"
-                                +fiveDaysWeather.getList().get(0).getWeather().get(0).getIcon()
-                                +"@2x.png").into(icon);
-                    FormatDate formatDate = new FormatDate();
-                try {
-                    date.setText(formatDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt()));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                setDataFromAPI();
 
-                setRecyclerView();
             }
 
             @Override
@@ -254,14 +273,17 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     }
 
     @Override
-    public void sendUserLocation(String location,boolean toSave) {
-        if(toSave){
+    public void sendUserLocation(String location, boolean toSave) {
+        if (toSave) {
             //Store user Preference here
-            editor.putString("location",location);
+            editor.putString("location", location);
             editor.commit();
         }
         Toast.makeText(this, "Location:" + location, Toast.LENGTH_SHORT).show();
+        adapter.isShimmer = true;
+        adapter.notifyDataSetChanged();
         buildRetroift(baseUrl, location);
+
     }
 
     private boolean checkPermission() {
@@ -287,48 +309,19 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     @Override
     public void
-    onRequestPermissionsResult(int requestCode,@NonNull String[] permissions,@NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+    onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == perm_id) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
+                requestNewLocationData();
             }
         }
     }
 
 
-
-    private void getLastLocation(){
-        // check if permissions are given
-        if (checkPermission()) {
-            // check if location is enabled
-            if (isLocationEnabled()) {
-                // getting last location from FusedLocationClient object
-                providerClient.getLastLocation().addOnCompleteListener(task -> {
-                            Location location = task.getResult();
-                            if (location == null) { requestNewLocationData();}
-                            else {
-                                lat= location.getLatitude();
-                                longs=location.getLongitude();
-                                buildRetroift(baseUrl,lat,longs);
-                            }
-                        });
-            }
-
-            else {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-
-            }
-        }
-        else {
-            // if permissions aren't available,request for permissions
-            requestPermissions();
-        }
-    }
 
     @SuppressLint("MissingPermission")
-    private void requestNewLocationData(){
+    private void requestNewLocationData() {
         // Initializing LocationRequest object with appropriate methods
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
@@ -336,42 +329,40 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         mLocationRequest.setFastestInterval(0);
         mLocationRequest.setNumUpdates(1);
 
-        // setting LocationRequest
-        // on FusedLocationClient
+        // setting LocationRequest on FusedLocationClient
         providerClient = LocationServices.getFusedLocationProviderClient(this);
-
         providerClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult){
-            Location mLastLocation = locationResult.getLastLocation();
-            lat =mLastLocation.getLatitude();
-            longs= mLastLocation.getLongitude();
-        }
-    };
 
 
     @Override
     public void setPosition(int position) {
-        Toast.makeText(this, "Got Position"+position, Toast.LENGTH_SHORT).show();
-        ArrayList<ItemHourly> itemHourlies = null;
-        if(position==0){
-            itemHourlies = new ArrayList<>(divide.getDayOne());
-        }else if(position==1){
-            itemHourlies = new ArrayList<>(divide.getDayTwo());
-        }else if(position==2){
-            itemHourlies = new ArrayList<>(divide.getDayThree());
-        }else if(position==3){
-            itemHourlies = new ArrayList<>(divide.getDayFOur());
-        }else {
-            itemHourlies = new ArrayList<>(divide.getDayFive());
+        ArrayList<ItemHourly> itemHourlies;
+        if (position == 0) {
+            itemHourlies = divide.getDayOne();
+        } else if (position == 1) {
+            itemHourlies = divide.getDayTwo();
+        } else if (position == 2) {
+            itemHourlies = divide.getDayThree();
+        } else if (position == 3) {
+            itemHourlies = divide.getDayFOur();
+        } else {
+            itemHourlies = divide.getDayFive();
         }
-
-
-        Intent intent = new Intent(this,ItemsHourly.class);
-        intent.putExtra("private_list", new Gson().toJson(itemHourlies));;
+        Intent intent = new Intent(this, ItemsHourly.class);
+        intent.putExtra("private_list", new Gson().toJson(itemHourlies));
         startActivity(intent);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+//        mShimmerViewContainer.startShimmerAnimation();
+    }
+
+    @Override
+    protected void onPause() {
+//        mShimmerViewContainer.stopShimmerAnimation();
+        super.onPause();
     }
 }
