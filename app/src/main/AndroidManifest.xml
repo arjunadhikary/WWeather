@@ -17,8 +17,8 @@
         <activity android:name=".ItemsHourly"/>
         <activity android:name=".splash" android:theme="@style/SplashTheme" android:launchMode="singleInstance">
             <intent-filter>
-                <action android:name="android.intent.action.LAUNCHER"/>
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>

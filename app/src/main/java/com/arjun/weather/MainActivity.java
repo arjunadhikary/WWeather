@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -185,8 +186,6 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 }
                 assert response.body() != null;
                 fiveDaysWeather = response.body();
-                editor.putString("location", fiveDaysWeather.getCity().getName());
-                editor.commit();
                 setDataFromAPI();
             }
 
@@ -237,10 +236,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     @SuppressLint("SetTextI18n")
     private void setDataFromAPI() {
-        precipitation.setVisibility(View.VISIBLE);
-        changeShimmerEffect(false);
         changeShimmerEffect(false);
         divide.convertData(fiveDaysWeather);
+        menu.getItem(0).getIcon().setTint(Color.parseColor("#000000"));
         Objects.requireNonNull(getSupportActionBar()).setTitle(fiveDaysWeather.getCity().getName() + ", " + fiveDaysWeather.getCity().getCountry());
         weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getDescription());
         wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed()) + " km/hr");
@@ -258,6 +256,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     }
 
     private void bottom_data() {
+        if(itemHourlyArrayList.size()!=0){
+            itemHourlyArrayList.clear();
+        }
         itemHourlyArrayList.add(divide.getDayOne().get(0));
         itemHourlyArrayList.add(divide.getDayTwo().get(3));
         itemHourlyArrayList.add(divide.getDayThree().get(3));
@@ -272,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .build();
         weather = retrofit.create(Weather.class);
         //API key will go down here
-        String appid = "API-KEY";
+        String appid = new API().sendAPIKEY();
         if (lat == null && lon == null) {
             getAllData(null, null, userSearch, appid);
         } else {
@@ -282,11 +283,11 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
 
     @Override
-    public void sendUserLocation(String location, boolean toSave) {
+    public void sendUserLocation(String location, Boolean toSave) {
         if (toSave) {
             //Store user Preference here
             editor.putString("location", location);
-            editor.commit();
+            editor.apply();
         }
         changeShimmerEffect(true);
         buildRetrofit(baseUrl, location, null, null);
@@ -315,8 +316,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     }
 
     @Override
-    public void
-    onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == perm_id) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -324,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             }
         }
     }
-
 
     @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
@@ -338,10 +337,13 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         providerClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
-
     @Override
     public void setPosition(int position) {
-        ArrayList<ItemHourly> itemHourlies;
+        ArrayList<ItemHourly> itemHourlies = new ArrayList<>();
+        if(itemHourlies.size()!=0){
+            itemHourlies.clear();
+            Log.e("itemsHourlies", "itemsHourlies size: "+itemHourlies.size());
+        }
         if (position == 0) {
             itemHourlies = divide.getDayOne();
         } else if (position == 1) {
