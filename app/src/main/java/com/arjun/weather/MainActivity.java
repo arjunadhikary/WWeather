@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .build();
         weather = retrofit.create(Weather.class);
         //API key will go down here
-        String appid = "API-KEY";
+        String appid = "API_KEY";
         if (lat == null && lon == null) {
             getAllData(null, null, userSearch, appid);
         } else {
