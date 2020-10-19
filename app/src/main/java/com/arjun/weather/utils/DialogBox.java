@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SearchView;
 
@@ -27,8 +28,9 @@ import java.util.Objects;
 public class DialogBox extends DialogFragment {
     private EditText searchView;
     private CheckBox checkBox;
+    private boolean isChecked = false;
     public interface sendLocation{
-        void sendUserLocation(String location,boolean toSave);
+        void sendUserLocation(String location,Boolean toSave);
     }
 
     sendLocation sendLocation;
@@ -40,11 +42,19 @@ public class DialogBox extends DialogFragment {
         checkBox = view.findViewById(R.id.checkBox);
         Button ok = view.findViewById(R.id.ok);
         Button cancel = view.findViewById(R.id.cancel);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.e("TAG", "sendUserLocation: "+b +"This is happened" );
+                isChecked= b;
+            }
+        });
         ok.setOnClickListener(view12 -> {
             String location = searchView.getText().toString();
             if(!location.isEmpty()){
                 //Send Data to main Activity using Interface
-                sendLocation.sendUserLocation(location, checkBox.isChecked());
+
+                sendLocation.sendUserLocation(location, isChecked);
                 Objects.requireNonNull(getDialog()).dismiss();
             }
             else{

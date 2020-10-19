@@ -14,7 +14,6 @@
         android:id="@+id/pConstrain"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/mainborder"
         app:layout_constraintBottom_toTopOf="@+id/rv"
@@ -22,7 +21,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.659">
+        app:layout_constraintVertical_bias="0.0">
 
 
         <TextView
@@ -73,8 +72,9 @@
             android:id="@+id/pre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="56dp"
             android:fontFamily="@font/montserrat"
+            android:text="300C"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
@@ -98,14 +98,15 @@
             android:id="@+id/humData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:fontFamily="@font/montserrat"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="@+id/pre"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/humidity"
-            app:layout_constraintTop_toBottomOf="@+id/pre" />
+            app:layout_constraintStart_toStartOf="@+id/pre"
+            app:layout_constraintTop_toBottomOf="@+id/pre"
+            tools:text="30km/hr" />
 
         <TextView
             android:id="@+id/wind"
@@ -124,13 +125,15 @@
             android:id="@+id/windData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="80dp"
+            android:layout_marginTop="4dp"
             android:fontFamily="@font/montserrat"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
-            app:layout_constraintStart_toEndOf="@+id/wind"
-            app:layout_constraintTop_toBottomOf="@+id/humData" />
+            app:layout_constraintEnd_toEndOf="@+id/humData"
+            app:layout_constraintStart_toStartOf="@+id/humData"
+            app:layout_constraintTop_toBottomOf="@+id/humData"
+            tools:text="34km/hr" />
 
         <TextView
             android:id="@+id/bigTemp"

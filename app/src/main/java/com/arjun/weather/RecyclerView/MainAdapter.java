@@ -2,6 +2,7 @@ package com.arjun.weather.RecyclerView;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +27,20 @@ import java.util.List;
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     public boolean isShimmer = true;
-    ArrayList<ItemHourly> fiveDaysWeather;
-    Context context;
-    int shimmerNumber = 5;
-    setDataActivity setDataActivity;
+    private ArrayList<ItemHourly> fiveDaysWeather = new ArrayList<>();
+    private List<Integer> colors = new ArrayList<>();
+
+    private Context context;
+    private int shimmerNumber = 5;
+    private  setDataActivity setDataActivity;
 
     public MainAdapter(ArrayList<ItemHourly> itemHourlyList, Context context, setDataActivity dataActivity) {
-        this.fiveDaysWeather = itemHourlyList;
+        if(fiveDaysWeather.size()!=0){
+            fiveDaysWeather.clear();
+            fiveDaysWeather.addAll(itemHourlyList);
+        }else {
+            this.fiveDaysWeather = itemHourlyList;
+        }
         this.setDataActivity = dataActivity;
         this.context = context;
 
@@ -49,12 +57,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String[] colorsTxt = context.getApplicationContext().getResources().getStringArray(R.array.colors);
-        List<Integer> colors = new ArrayList<Integer>();
-        for (String s : colorsTxt) {
-            int newColor = Color.parseColor(s);
-            colors.add(newColor);
-        }
+
         if (isShimmer) {
             holder.cardView.setCardBackgroundColor(null);
             holder.shimmerFrameLayout.startShimmerAnimation();
@@ -64,6 +67,14 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
                             .getWeather().get(0)
                             .getIcon() + "@2x.png")
                     .into(holder.icon1);
+            String[] colorsTxt = context.getApplicationContext().getResources().getStringArray(R.array.colors);
+            Log.e("Color", "onBindViewHolder: "+colorsTxt.length);
+            if(colors.size()!=0){ colors.clear(); }
+            for (String s : colorsTxt) {
+                int newColor = Color.parseColor(s);
+                colors.add(newColor);
+            }
+            Log.e("ArrayList", "onBindViewHolder: "+colors.size());
             holder.shimmerFrameLayout.stopShimmerAnimation();
             holder.nomtemp.setText(String.format("%s°C", (fiveDaysWeather.get(position).getMain().getTemp())));
             holder.cardView.setCardBackgroundColor(colors.get(position));
