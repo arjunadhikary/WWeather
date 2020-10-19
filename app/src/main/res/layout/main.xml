@@ -10,31 +10,32 @@
 
     android:layoutDirection="locale"
     tools:context=".MainActivity">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pConstrain"
         android:layout_width="0dp"
-        android:layout_height="370dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="25dp"
         android:layout_marginEnd="25dp"
         android:background="@drawable/mainborder"
         app:layout_constraintBottom_toTopOf="@+id/rv"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.461"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.236">
+        app:layout_constraintVertical_bias="0.659">
 
 
         <TextView
             android:id="@+id/weather"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             android:textColor="#EEEEEE"
             android:textSize="25sp"
             app:layout_constraintEnd_toStartOf="@+id/bigTemp"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/bigTemp"
             app:layout_constraintTop_toBottomOf="@+id/bigTemp" />
 
         <ImageView
@@ -47,22 +48,24 @@
             android:contentDescription="TODO"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.75"
+            app:layout_constraintHorizontal_bias="0.8"
             app:layout_constraintStart_toEndOf="@+id/bigTemp"
             app:layout_constraintTop_toBottomOf="@+id/bigTemp"
-            app:layout_constraintVertical_bias="0.06" />
+            app:layout_constraintVertical_bias="0.725" />
 
         <TextView
             android:id="@+id/pData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="76dp"
             android:fontFamily="@font/montserrat"
-            android:text="Precipitation"
+            android:text="Feels Like:"
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="@+id/weekday"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/weekday" />
 
         <TextView
@@ -86,6 +89,7 @@
             android:textAlignment="viewEnd"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
+            android:visibility="visible"
             app:layout_constraintStart_toStartOf="@+id/pData"
             app:layout_constraintTop_toBottomOf="@+id/pData" />
 
@@ -106,9 +110,12 @@
             android:id="@+id/wind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
             android:text="Wind:"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/humidity"
             app:layout_constraintTop_toBottomOf="@+id/humidity" />
 
@@ -130,25 +137,14 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="120dp"
             android:layout_marginTop="40dp"
             android:fontFamily="@font/montserrat"
+            android:textAlignment="center"
             android:textColor="#EEEEEE"
-            android:textSize="45sp"
+            android:textSize="35sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:text="°C "
-            android:textColor="#EEEEEE"
-            android:textSize="24sp"
-            app:layout_constraintStart_toEndOf="@+id/bigTemp"
-            app:layout_constraintTop_toTopOf="@+id/bigTemp" />
 
         <TextView
             android:id="@+id/weekday"
@@ -177,6 +173,17 @@
         app:layout_constraintHorizontal_bias="0.037"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/weather" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Current "
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
