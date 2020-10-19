@@ -2,7 +2,6 @@ package com.arjun.weather.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,16 +23,16 @@ import java.util.ArrayList;
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     public boolean isShimmer = true;
-    int shimmerNumber=8;
+    int shimmerNumber = 8;
 
     ArrayList<ItemHourly> hourlyArrayList = new ArrayList<>();
     Context context;
 
     public Adapter(ArrayList<ItemHourly> itemHourlyList, Context context) {
-        if(hourlyArrayList.size()!=0){
+        if (hourlyArrayList.size() != 0) {
             hourlyArrayList.clear();
             hourlyArrayList.addAll(itemHourlyList);
-        }else {
+        } else {
             this.hourlyArrayList = itemHourlyList;
         }
         this.context = context;
@@ -49,20 +48,23 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+
+
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if(isShimmer) {
+        if (isShimmer) {
             holder.frameLayout.startShimmerAnimation();
-        }else{
+        } else {
             holder.frameLayout.stopShimmerAnimation();
             Glide.with(context)
-                    .load("https://openweathermap.org/img/wn/"+hourlyArrayList.get(position).getWeather().get(0).getIcon()+"@2x.png")
+                    .load("https://openweathermap.org/img/wn/" + hourlyArrayList.get(position).getWeather().get(0).getIcon() + "@2x.png")
                     .into(holder.icon1);
 
-            holder.tempmin.setText(hourlyArrayList.get(position).getMain().getTempMin()+"°C");
-            holder.tempmax.setText(hourlyArrayList.get(position).getMain().getTempMax()+"°C");
+            holder.tempmin.setText(hourlyArrayList.get(position).getMain().getTempMin() + "°C");
+            holder.tempmax.setText(hourlyArrayList.get(position).getMain().getTempMax() + "°C");
             holder.day.setText(new FormatDate().onlyDay(hourlyArrayList.get(position).getDtTxt()));
+            holder.frameLayout.setBackground(null);
             holder.date.setText(new FormatDate().mon_day(hourlyArrayList.get(position).getDtTxt()));
         }
 
@@ -70,7 +72,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return isShimmer?shimmerNumber:hourlyArrayList.size();
+        return isShimmer ? shimmerNumber : hourlyArrayList.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

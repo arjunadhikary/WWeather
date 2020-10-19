@@ -7,9 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -21,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.MainAdapter;
@@ -41,9 +39,12 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Objects;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,14 +56,16 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
     //Get all Views
-    TextView  date, weatherCondition, humidity, wind, bigTemperature, precipitation;
+    TextView date, weatherCondition, humidity, wind, bigTemperature, precipitation;
     ImageView icon;
+    RecyclerView recyclerView;
+    MainAdapter adapter;
     private int perm_id = 101;
+    private int Visible = 0;
+    private int Invisible = 8;
     private boolean isTapped = false;
     private Menu menu;
     private double lat, longs;
-    RecyclerView recyclerView;
-    MainAdapter adapter;
     private Divide divide = new Divide();
     private FiveDaysWeather fiveDaysWeather;
     private ArrayList<ItemHourly> itemHourlyArrayList = new ArrayList<>();
@@ -74,9 +77,8 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             Location mLastLocation = locationResult.getLastLocation();
             lat = mLastLocation.getLatitude();
             longs = mLastLocation.getLongitude();
-            Log.e("Location", "onLocationResult: "+lat+" "+longs );
-                buildRetroift(baseUrl,lat,longs);
-                Log.e("Location", "onLocationResult: "+lat+" "+longs );
+            changeShimmerEffect(true);
+            buildRetroift(baseUrl, lat, longs);
 
 
         }
@@ -97,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         else buildRetroift(baseUrl, "Newtown");
 
 
+
     }
 
     private void setAllViews() {
@@ -110,12 +113,11 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         setRecyclerView();
 
 
-
     }
 
     private void setRecyclerView() {
-         recyclerView = findViewById(R.id.rv);
-         adapter = new MainAdapter(itemHourlyArrayList, this, this);
+        recyclerView = findViewById(R.id.rv);
+        adapter = new MainAdapter(itemHourlyArrayList, this, this);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
@@ -136,11 +138,18 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             case R.id.search_auto:
                 if (!isTapped) {
                     isTapped = true;
-                    menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));
-                    if(lat==0.0&&longs==0.0){
-                        Toast.makeText(this, "Null Value", Toast.LENGTH_SHORT).show();
-                        requestNewLocationData();
+                    if (checkPermission()) {
+                        if (isLocationEnabled()) {
+                            requestNewLocationData();
+                            menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));
+                        } else {
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(intent);
+                        }
+                    } else {
+                        requestPermissions();
                     }
+
 
                 } else {
                     isTapped = false;
@@ -169,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         weather = retrofit.create(Weather.class);
-        String appid = "KEY_HERE";
+        String appid = "a48dc14ca469afef26f6969098961782";
         getAllData(String.valueOf(lat), String.valueOf(lon), appid);
 
     }
@@ -181,37 +190,83 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             @Override
             public void onResponse(Call<FiveDaysWeather> call, Response<FiveDaysWeather> response) {
                 if (!response.isSuccessful()) {
-                    Log.e("TAG", "onResponse: " + response.code());
+                    buildNetworkError(response.code());
                     return;
                 }
-                Log.e("TAG", "onResponse:Data received ");
                 assert response.body() != null;
-                if (fiveDaysWeather.getList().size() != 0){
+                if (fiveDaysWeather.getList().size() != 0) {
                     fiveDaysWeather = null;
-                fiveDaysWeather = response.body();
-            }
-                 setDataFromAPI();
+                    fiveDaysWeather = response.body();
+                    editor.putString("location", fiveDaysWeather.getCity().getName());
+                    editor.commit();
+                }
+                humidity.setVisibility(View.VISIBLE);
+                setDataFromAPI();
             }
 
             @Override
             public void onFailure(Call<FiveDaysWeather> call, Throwable t) {
-                Log.e("TAG", "onResponse: " + t.getMessage());
+                changeShimmerEffect(false);
+                buildSnackBar(lat, lon, null);
             }
         });
 
     }
 
+    void whatChangeVisibility(int type) {
+        precipitation.setVisibility(type);
+        humidity.setVisibility(type);
+        wind.setVisibility(type);
+
+    }
+
+    void changeShimmerEffect(boolean todo) {
+        adapter.isShimmer = todo;
+        adapter.notifyDataSetChanged();
+    }
+
+    private void buildNetworkError(int error) {
+        changeShimmerEffect(false);
+        switch (error) {
+            case 404:
+                Snackbar.make(weatherCondition, "No Such Location Found", Snackbar.LENGTH_LONG).show();
+                break;
+            case 408:
+                Snackbar.make(weatherCondition, "Bad Internet Connection", Snackbar.LENGTH_LONG).show();
+                break;
+            case 500:
+                Snackbar.make(weatherCondition, "Internal Server Error", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    private void buildSnackBar(String lat, String lon, String userData) {
+        Snackbar.make(weatherCondition, "Internet Connection Failed", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Try Again", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (userData == null) {
+                            buildRetroift(baseUrl, Double.parseDouble(lat), Double.parseDouble(lon));
+                        } else {
+                            buildRetroift(baseUrl, userData);
+                        }
+                    }
+                })
+                .show();
+
+    }
+
     @SuppressLint("SetTextI18n")
     private void setDataFromAPI() {
-        adapter.isShimmer = false;
-        adapter.notifyDataSetChanged();
+        precipitation.setVisibility(View.VISIBLE);
+        changeShimmerEffect(false);
+        changeShimmerEffect(false);
         divide.convertData(fiveDaysWeather);
         Objects.requireNonNull(getSupportActionBar()).setTitle(fiveDaysWeather.getCity().getName() + ", " + fiveDaysWeather.getCity().getCountry());
-        weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getMain());
+        weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getDescription());
         wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed()) + " km/hr");
-        humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity()) + "%");
-        precipitation.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getPressure()));
-        bigTemperature.setText(String.valueOf(fiveDaysWeather.getList().get(0).getMain().getTemp()));
+        humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity()) + "mm");
+        precipitation.setText((fiveDaysWeather.getList().get(0).getMain().getTemp()+"°C"));
+        bigTemperature.setText(fiveDaysWeather.getList().get(0).getMain().getTemp() + "°C");
         Glide
                 .with(MainActivity.this)
                 .load("https://openweathermap.org/img/wn/"
@@ -219,16 +274,11 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                         + "@2x.png").into(icon);
         FormatDate formatDate = new FormatDate();
         date.setText(formatDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt()));
-       bottom_data(formatDate);
+        bottom_data(formatDate);
     }
 
     private void bottom_data(FormatDate formatDate) {
-        for (ItemHourly hourly: divide.getDayOne()) {
-            if(formatDate.onlyDay(hourly.getDtTxt()).equals("9") || formatDate.onlyDay(hourly.getDtTxt()).equals("12")){
-                itemHourlyArrayList.add(hourly);
-                return;
-            }
-        }
+        itemHourlyArrayList.add(divide.getDayOne().get(0));
         itemHourlyArrayList.add(divide.getDayTwo().get(3));
         itemHourlyArrayList.add(divide.getDayThree().get(3));
         itemHourlyArrayList.add(divide.getDayFOur().get(3));
@@ -242,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                 .build();
         weather = retrofit.create(Weather.class);
         //API key will go down here
-        String appid = "a48dc14ca469afef26f6969098961782";
+        String appid = "API_KEY";
         getAllData(userData, appid);
 
     }
@@ -255,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             @Override
             public void onResponse(Call<FiveDaysWeather> call, Response<FiveDaysWeather> response) {
                 if (!response.isSuccessful()) {
-                    Log.e("TAG", "onResponse: " + response.code());
+                    buildNetworkError(response.code());
                     return;
                 }
                 assert response.body() != null;
@@ -266,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
             @Override
             public void onFailure(Call<FiveDaysWeather> call, Throwable t) {
-                Log.e("TAG", "onResponse: " + t.getMessage());
+                buildSnackBar(null, null, search);
             }
         });
 
@@ -279,9 +329,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             editor.putString("location", location);
             editor.commit();
         }
-        Toast.makeText(this, "Location:" + location, Toast.LENGTH_SHORT).show();
-        adapter.isShimmer = true;
-        adapter.notifyDataSetChanged();
+        changeShimmerEffect(true);
         buildRetroift(baseUrl, location);
 
     }
@@ -319,21 +367,17 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     }
 
 
-
     @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
-        // Initializing LocationRequest object with appropriate methods
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         mLocationRequest.setInterval(5);
         mLocationRequest.setFastestInterval(0);
         mLocationRequest.setNumUpdates(1);
-
         // setting LocationRequest on FusedLocationClient
         providerClient = LocationServices.getFusedLocationProviderClient(this);
         providerClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
-
 
 
     @Override
@@ -354,15 +398,5 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         intent.putExtra("private_list", new Gson().toJson(itemHourlies));
         startActivity(intent);
     }
-    @Override
-    public void onResume() {
-        super.onResume();
-//        mShimmerViewContainer.startShimmerAnimation();
-    }
 
-    @Override
-    protected void onPause() {
-//        mShimmerViewContainer.stopShimmerAnimation();
-        super.onPause();
-    }
 }
