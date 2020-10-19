@@ -13,7 +13,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,13 +60,10 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
     RecyclerView recyclerView;
     MainAdapter adapter;
     private int perm_id = 101;
-    private int Visible = 0;
-    private int Invisible = 8;
     private boolean isTapped = false;
     private Menu menu;
-    private double lat, longs;
     private Divide divide = new Divide();
-    private FiveDaysWeather fiveDaysWeather;
+    private FiveDaysWeather fiveDaysWeather = new FiveDaysWeather();
     private ArrayList<ItemHourly> itemHourlyArrayList = new ArrayList<>();
     private Weather weather;
     private String baseUrl = "https://api.openweathermap.org/data/2.5/";
@@ -75,10 +71,10 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         @Override
         public void onLocationResult(LocationResult locationResult) {
             Location mLastLocation = locationResult.getLastLocation();
-            lat = mLastLocation.getLatitude();
-            longs = mLastLocation.getLongitude();
+            double lat = mLastLocation.getLatitude();
+            double longs = mLastLocation.getLongitude();
             changeShimmerEffect(true);
-            buildRetroift(baseUrl, lat, longs);
+            buildRetrofit(baseUrl, null, String.valueOf(lat), String.valueOf(longs));
 
 
         }
@@ -95,9 +91,8 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         Objects.requireNonNull(getSupportActionBar()).setElevation(0);
         String loc = preferences.getString("location", null);
         providerClient = LocationServices.getFusedLocationProviderClient(this);
-        if (loc != null) buildRetroift(baseUrl, loc);
-        else buildRetroift(baseUrl, "Newtown");
-
+        if (loc != null) buildRetrofit(baseUrl, loc, null, null);
+        else buildRetrofit(baseUrl, "Newtown", null, null);
 
 
     }
@@ -140,8 +135,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                     isTapped = true;
                     if (checkPermission()) {
                         if (isLocationEnabled()) {
-                            requestNewLocationData();
                             menu.getItem(0).getIcon().setTint(Color.parseColor("#0000FF"));
+                            requestNewLocationData();
+
                         } else {
                             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                             startActivity(intent);
@@ -171,21 +167,15 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     }
 
-    private void buildRetroift(String baseUrl, double lat, double lon) {
-        Log.d("Base_Url", "onClick: " + baseUrl);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        weather = retrofit.create(Weather.class);
-        String appid = "a48dc14ca469afef26f6969098961782";
-        getAllData(String.valueOf(lat), String.valueOf(lon), appid);
 
-    }
+    private void getAllData(String lat, String lon, String userSearch, String apiKey) {
+        Call<FiveDaysWeather> weatherCall;
+        if (userSearch == null) {
+            weatherCall = weather.getDataOnCoords(lat, lon, apiKey, "metric");
+        } else {
+            weatherCall = weather.getAllWeatherData(userSearch, apiKey, "metric");
+        }
 
-    private void getAllData(String lat, String lon, String apiKey) {
-
-        Call<FiveDaysWeather> weatherCall = weather.getDataOnCoords(lat, lon, apiKey, "metric");
         weatherCall.enqueue(new Callback<FiveDaysWeather>() {
             @Override
             public void onResponse(Call<FiveDaysWeather> call, Response<FiveDaysWeather> response) {
@@ -194,13 +184,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                     return;
                 }
                 assert response.body() != null;
-                if (fiveDaysWeather.getList().size() != 0) {
-                    fiveDaysWeather = null;
-                    fiveDaysWeather = response.body();
-                    editor.putString("location", fiveDaysWeather.getCity().getName());
-                    editor.commit();
-                }
-                humidity.setVisibility(View.VISIBLE);
+                fiveDaysWeather = response.body();
+                editor.putString("location", fiveDaysWeather.getCity().getName());
+                editor.commit();
                 setDataFromAPI();
             }
 
@@ -213,12 +199,6 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
 
     }
 
-    void whatChangeVisibility(int type) {
-        precipitation.setVisibility(type);
-        humidity.setVisibility(type);
-        wind.setVisibility(type);
-
-    }
 
     void changeShimmerEffect(boolean todo) {
         adapter.isShimmer = todo;
@@ -245,9 +225,9 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                     @Override
                     public void onClick(View view) {
                         if (userData == null) {
-                            buildRetroift(baseUrl, Double.parseDouble(lat), Double.parseDouble(lon));
+                            buildRetrofit(baseUrl, null, String.valueOf(lat), String.valueOf(lon));
                         } else {
-                            buildRetroift(baseUrl, userData);
+                            buildRetrofit(baseUrl, userData, null, null);
                         }
                     }
                 })
@@ -265,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getDescription());
         wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed()) + " km/hr");
         humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity()) + "mm");
-        precipitation.setText((fiveDaysWeather.getList().get(0).getMain().getTemp()+"°C"));
+        precipitation.setText((fiveDaysWeather.getList().get(0).getMain().getTemp() + "°C"));
         bigTemperature.setText(fiveDaysWeather.getList().get(0).getMain().getTemp() + "°C");
         Glide
                 .with(MainActivity.this)
@@ -274,10 +254,10 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
                         + "@2x.png").into(icon);
         FormatDate formatDate = new FormatDate();
         date.setText(formatDate.convertDate(fiveDaysWeather.getList().get(0).getDtTxt()));
-        bottom_data(formatDate);
+        bottom_data();
     }
 
-    private void bottom_data(FormatDate formatDate) {
+    private void bottom_data() {
         itemHourlyArrayList.add(divide.getDayOne().get(0));
         itemHourlyArrayList.add(divide.getDayTwo().get(3));
         itemHourlyArrayList.add(divide.getDayThree().get(3));
@@ -285,42 +265,21 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         itemHourlyArrayList.add(divide.getDayFive().get(3));
     }
 
-    private void buildRetroift(String baseUrl, String userData) {
+    private void buildRetrofit(String baseUrl, String userSearch, String lat, String lon) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         weather = retrofit.create(Weather.class);
         //API key will go down here
-        String appid = "API_KEY";
-        getAllData(userData, appid);
-
+        String appid = "API-KEY";
+        if (lat == null && lon == null) {
+            getAllData(null, null, userSearch, appid);
+        } else {
+            getAllData(String.valueOf(lat), String.valueOf(lon), null, appid);
+        }
     }
 
-    private void getAllData(String search, String apiKey) {
-
-        Call<FiveDaysWeather> weatherCall = weather.getAllWeatherData(search, apiKey, "metric");
-        weatherCall.enqueue(new Callback<FiveDaysWeather>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onResponse(Call<FiveDaysWeather> call, Response<FiveDaysWeather> response) {
-                if (!response.isSuccessful()) {
-                    buildNetworkError(response.code());
-                    return;
-                }
-                assert response.body() != null;
-                fiveDaysWeather = response.body();
-                setDataFromAPI();
-
-            }
-
-            @Override
-            public void onFailure(Call<FiveDaysWeather> call, Throwable t) {
-                buildSnackBar(null, null, search);
-            }
-        });
-
-    }
 
     @Override
     public void sendUserLocation(String location, boolean toSave) {
@@ -330,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
             editor.commit();
         }
         changeShimmerEffect(true);
-        buildRetroift(baseUrl, location);
+        buildRetrofit(baseUrl, location, null, null);
 
     }
 
