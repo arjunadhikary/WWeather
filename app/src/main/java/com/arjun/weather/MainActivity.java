@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.arjun.weather.Model.FiveDaysWeather;
 import com.arjun.weather.Model.ItemHourly;
 import com.arjun.weather.RecyclerView.MainAdapter;
+import com.arjun.weather.utils.Caps;
 import com.arjun.weather.utils.DialogBox;
 import com.arjun.weather.utils.Divide;
 import com.arjun.weather.utils.FormatDate;
@@ -240,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements DialogBox.sendLoc
         divide.convertData(fiveDaysWeather);
         menu.getItem(0).getIcon().setTint(Color.parseColor("#000000"));
         Objects.requireNonNull(getSupportActionBar()).setTitle(fiveDaysWeather.getCity().getName() + ", " + fiveDaysWeather.getCity().getCountry());
-        weatherCondition.setText(fiveDaysWeather.getList().get(0).getWeather().get(0).getDescription());
+        weatherCondition.setText(new Caps().capitalizeWord(fiveDaysWeather.getList().get(0).getWeather().get(0).getDescription()));
         wind.setText((fiveDaysWeather.getList().get(0).getWind().getSpeed()) + " km/hr");
         humidity.setText((fiveDaysWeather.getList().get(0).getMain().getHumidity()) + "mm");
         precipitation.setText((fiveDaysWeather.getList().get(0).getMain().getTemp() + "°C"));

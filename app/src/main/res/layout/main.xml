@@ -16,12 +16,10 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:background="@drawable/mainborder"
-        app:layout_constraintBottom_toTopOf="@+id/rv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toTopOf="parent">
 
 
         <TextView
@@ -47,10 +45,10 @@
             android:contentDescription="TODO"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.75"
+            app:layout_constraintHorizontal_bias="0.816"
             app:layout_constraintStart_toEndOf="@+id/bigTemp"
             app:layout_constraintTop_toBottomOf="@+id/bigTemp"
-            app:layout_constraintVertical_bias="0.592" />
+            app:layout_constraintVertical_bias="0.818" />
 
         <TextView
             android:id="@+id/pData"
@@ -112,7 +110,7 @@
             android:id="@+id/wind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="52dp"
             android:text="Wind:"
             android:textColor="#EEEEEE"
             android:textSize="20sp"
@@ -178,17 +176,18 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.037"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pConstrain"
         tools:listitem="@layout/weather" />
 
     <TextView
         android:id="@+id/textView"
-        android:textColor="#6A0EDC"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:text="Current "
+        android:textColor="#DAD0D0"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
